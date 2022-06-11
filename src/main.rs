@@ -12,15 +12,15 @@ enum Shape {
 impl Shape {
     fn gt(&self, other: &Shape) -> bool {
         use Shape::*;
-        match (self, other) {
-            (Rock, Scissors | Lizard) => true,
-            (Paper, Rock | Spock) => true,
-            (Scissors, Paper | Lizard) => true,
-            (Lizard, Paper | Spock) => true,
-            (Spock, Scissors | Rock) => true,
-            _ => false
-        }
+        matches!((self, other),
+            (Rock, Scissors | Lizard)
+            | (Paper, Rock | Spock)
+            | (Scissors, Paper | Lizard)
+            | (Lizard, Paper | Spock)
+            | (Spock, Scissors | Rock)
+        )
     }
+
 
     fn get_winner_shape(&self) -> Shape {
         match self {
@@ -77,10 +77,20 @@ struct Game {
 }
 
 impl Game {
+    fn new(player1_name: &str, player2_name: &str) -> Self {
+        let line = get_input();
+        let parsed: Vec<&str> = line.split(' ').collect();
+        Self {
+            player1: Player::new(player1_name, parse_shape(parsed[0]).unwrap()),
+            player2: Player::new(player2_name, parse_shape(parsed[1]).unwrap()),
+            turns: num_parse(String::from(parsed[2])),
+            ties: 0,
+        }
+    }
     fn in_loop(&mut self, turn_num: u64) -> bool {
         use Shape::*;
         let turns_left = self.turns - turn_num;
-        return match (&self.player1.shape, &self.player2.shape) {
+        match (&self.player1.shape, &self.player2.shape) {
             (Lizard, Spock) | (Lizard, Paper) => {
                 self.player1.score = turns_left;
                 true
@@ -96,7 +106,7 @@ impl Game {
                 }
             }
             _ => false
-        };
+        }
     }
 
     fn play(&mut self) {
@@ -135,25 +145,30 @@ impl Game {
 
 impl fmt::Display for Game {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
-        if self.player1.score == self.player2.score {
-            write!(f, "{} and {} tie, each winning {} game(s) and tying {} game(s)",
-                   self.player1.name,
-                   self.player2.name,
-                   self.player1.score,
-                   self.ties
-            )
-        } else if self.player1.score > self.player2.score {
-            write!(f, "{} wins, by winning {} game(s) and tying {} game(s)",
-                   self.player1.name,
-                   self.player1.score,
-                   self.ties
-            )
-        } else {
-            write!(f, "{} wins, by winning {} game(s) and tying {} game(s)",
-                   self.player2.name,
-                   self.player2.score,
-                   self.ties
-            )
+        match (self.player1.score, self.player2.score) {
+            (x, y) if x == y => {
+                write!(f, "{} and {} tie, each winning {} game(s) and tying {} game(s)",
+                       self.player1.name,
+                       self.player2.name,
+                       self.player1.score,
+                       self.ties
+                )
+            }
+            (x, y) if x > y => {
+                write!(f, "{} and {} tie, each winning {} game(s) and tying {} game(s)",
+                       self.player1.name,
+                       self.player2.name,
+                       self.player1.score,
+                       self.ties
+                )
+            }
+            _ => {
+                write!(f, "{} wins, by winning {} game(s) and tying {} game(s)",
+                       self.player2.name,
+                       self.player2.score,
+                       self.ties
+                )
+            }
         }
     }
 }
@@ -174,25 +189,10 @@ fn num_parse(input: String) -> u64 {
         .expect("Failed to parse numeric string")
 }
 
-fn get_game_amount() -> u64 {
-    num_parse(get_input())
-}
-
-fn parse_instructions(instructions: String) -> Game {
-    let parsed: Vec<&str> = instructions.split(' ').collect();
-    Game {
-        player1: Player::new("Alice", parse_shape(parsed[0]).unwrap()),
-        player2: Player::new("Bob", parse_shape(parsed[1]).unwrap()),
-        turns: num_parse(String::from(parsed[2])),
-        ties: 0,
-    }
-}
-
 fn game_loop() {
-    for _game_num in 1..=get_game_amount() {
-        let mut game = parse_instructions(get_input());
-
-        game.play();
+    let game_amount = num_parse(get_input());
+    for _game_num in 1..=game_amount {
+        Game::new("Alice", "Bob").play();
     }
 }
 
