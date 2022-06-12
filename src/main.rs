@@ -92,13 +92,13 @@ impl Game {
         let turns_left = self.turns - turn_num;
         match (&self.player1.shape, &self.player2.shape) {
             (Lizard, Spock) | (Lizard, Paper) => {
-                self.player1.score = turns_left;
+                self.player1.score += turns_left;
                 true
             }
             (Paper, Paper) | (Paper, Spock) | (Scissors, Spock) | (Lizard, Rock) => {
                 if turns_left % 4 == 0 {
-                    self.player1.score += turns_left / 2;
-                    self.player2.score += turns_left / 4;
+                    self.player1.score += turns_left / 4;
+                    self.player2.score += turns_left / 2;
                     self.ties += turns_left / 4;
                     true
                 } else {
@@ -155,9 +155,8 @@ impl fmt::Display for Game {
                 )
             }
             (x, y) if x > y => {
-                write!(f, "{} and {} tie, each winning {} game(s) and tying {} game(s)",
+                write!(f, "{} wins, by winning {} game(s) and tying {} game(s)",
                        self.player1.name,
-                       self.player2.name,
                        self.player1.score,
                        self.ties
                 )
