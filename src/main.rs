@@ -1,6 +1,6 @@
 use std::{fmt, io};
 
-#[derive(Hash, Eq, PartialEq, Debug)]
+#[derive(PartialEq, Debug)]
 enum Shape {
     Rock,
     Paper,
