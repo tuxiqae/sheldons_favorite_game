@@ -1,6 +1,6 @@
 use std::{fmt, io};
 
-#[derive(PartialEq, Debug)]
+#[derive(Eq, PartialEq, Debug)]
 enum Shape {
     Rock,
     Paper,
@@ -20,7 +20,6 @@ impl Shape {
             | (Spock, Scissors | Rock)
         )
     }
-
 
     fn get_winner_shape(&self) -> Shape {
         match self {
@@ -44,7 +43,7 @@ fn parse_shape(shape: &str) -> Option<Shape> {
     }
 }
 
-#[derive(Debug)]
+#[derive(Eq, PartialEq, Debug)]
 struct Player {
     name: String,
     shape: Shape,
@@ -67,8 +66,7 @@ impl fmt::Display for Player {
     }
 }
 
-
-#[derive(Debug)]
+#[derive(Eq, PartialEq, Debug)]
 struct Game {
     player1: Player,
     player2: Player,
@@ -77,13 +75,11 @@ struct Game {
 }
 
 impl Game {
-    fn new(player1_name: &str, player2_name: &str) -> Self {
-        let line = get_input();
-        let parsed: Vec<&str> = line.split(' ').collect();
+    fn new(instructions: &[String], player1_name: &str, player2_name: &str) -> Self {
         Self {
-            player1: Player::new(player1_name, parse_shape(parsed[0]).unwrap()),
-            player2: Player::new(player2_name, parse_shape(parsed[1]).unwrap()),
-            turns: num_parse(String::from(parsed[2])),
+            player1: Player::new(player1_name, parse_shape(instructions[0].as_str()).unwrap()),
+            player2: Player::new(player2_name, parse_shape(instructions[1].as_str()).unwrap()),
+            turns: num_parse(&instructions[2]),
             ties: 0,
         }
     }
@@ -109,7 +105,7 @@ impl Game {
         }
     }
 
-    fn play(&mut self) {
+    fn run(&mut self) {
         for turn_num in 0..self.turns {
             if self.in_loop(turn_num) {
                 break;
@@ -139,7 +135,6 @@ impl Game {
                 }
             }
         }
-        println!("{}", self);
     }
 }
 
@@ -181,25 +176,126 @@ fn get_input() -> String {
     input
 }
 
-fn num_parse(input: String) -> u64 {
+fn num_parse(input: &str) -> u64 {
     input
         .trim()
         .parse()
         .expect("Failed to parse numeric string")
 }
 
-fn game_loop() {
-    let game_amount = num_parse(get_input());
-    for _game_num in 1..=game_amount {
-        Game::new("Alice", "Bob").play();
+fn parse_game_line(game_line: &str, game_instructions: &mut Vec<String>) {
+    game_instructions.extend(
+        game_line
+            .split(' ')
+            .map(str::to_owned)
+    )
+}
+
+fn game_loop(game_amount: u64) {
+    let mut game_instructions: Vec<String> = Vec::with_capacity(3);
+    for _game_num in 0..game_amount {
+        game_instructions.clear();
+        parse_game_line(&get_input(), &mut game_instructions);
+        let mut game = Game::new(&game_instructions,
+                                 "Alice",
+                                 "Bob",
+        );
+        game.run();
+        println!("{game}");
     }
 }
 
 fn main() {
-    game_loop();
+    let game_amount = num_parse(&get_input());
+    game_loop(game_amount);
+}
 
-    // Tests
-    assert!(Shape::Rock.gt(&Shape::Scissors));
-    assert!(Shape::Paper.gt(&Shape::Spock));
-    assert!(!Shape::Paper.gt(&Shape::Scissors));
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn shape_comparison() {
+        assert!(Shape::Rock.gt(&Shape::Scissors));
+        assert!(Shape::Paper.gt(&Shape::Spock));
+        assert!(!Shape::Paper.gt(&Shape::Scissors));
+        assert_eq!(Shape::Spock, Shape::Spock);
+    }
+
+    #[test]
+    fn game_creation() {
+        let baseline: Game = Game {
+            player1: Player::new("player1", Shape::Spock),
+            player2: Player::new("player2", Shape::Lizard),
+            turns: 6,
+            ties: 0,
+        };
+
+        let correct_game_instructions: Vec<String> = Vec::from(
+            [
+                String::from("Spock"),
+                String::from("Lizard"),
+                String::from("6")
+            ]
+        );
+
+        let game_equal = Game::new(&correct_game_instructions, "player1", "player2");
+        let wrong_game_instructions: Vec<String> = Vec::from(
+            [
+                String::from("Lizard"),
+                String::from("Spock"),
+                String::from("6")
+            ]
+        );
+
+        let game_not_equal = Game::new(&wrong_game_instructions, "player1", "player2");
+
+        assert_eq!(baseline, game_equal);
+        assert_ne!(baseline, game_not_equal);
+    }
+
+    #[test]
+    fn run_all_games() {
+        use std::collections::HashMap;
+
+        let mapping: HashMap<&str, &str> = HashMap::from(
+            [
+                ("Rock Rock 25", "Bob wins, by winning 12 game(s) and tying 7 game(s)"),
+                ("Rock Paper 25", "Bob wins, by winning 13 game(s) and tying 6 game(s)"),
+                ("Rock Scissors 25", "Bob wins, by winning 12 game(s) and tying 6 game(s)"),
+                ("Rock Lizard 25", "Bob wins, by winning 12 game(s) and tying 6 game(s)"),
+                ("Rock Spock 25", "Bob wins, by winning 13 game(s) and tying 6 game(s)"),
+                ("Paper Rock 25", "Bob wins, by winning 12 game(s) and tying 6 game(s)"),
+                ("Paper Paper 25", "Bob wins, by winning 12 game(s) and tying 7 game(s)"),
+                ("Paper Scissors 25", "Bob wins, by winning 13 game(s) and tying 7 game(s)"),
+                ("Paper Lizard 25", "Bob wins, by winning 13 game(s) and tying 6 game(s)"),
+                ("Paper Spock 25", "Bob wins, by winning 12 game(s) and tying 6 game(s)"),
+                ("Scissors Rock 25", "Bob wins, by winning 13 game(s) and tying 6 game(s)"),
+                ("Scissors Paper 25", "Bob wins, by winning 12 game(s) and tying 6 game(s)"),
+                ("Scissors Scissors 25", "Bob wins, by winning 12 game(s) and tying 8 game(s)"),
+                ("Scissors Lizard 25", "Bob wins, by winning 12 game(s) and tying 6 game(s)"),
+                ("Scissors Spock 25", "Bob wins, by winning 13 game(s) and tying 6 game(s)"),
+                ("Lizard Rock 25", "Bob wins, by winning 13 game(s) and tying 6 game(s)"),
+                ("Lizard Paper 25", "Alice wins, by winning 25 game(s) and tying 0 game(s)"),
+                ("Lizard Scissors 25", "Bob wins, by winning 13 game(s) and tying 7 game(s)"),
+                ("Lizard Lizard 25", "Bob wins, by winning 12 game(s) and tying 7 game(s)"),
+                ("Lizard Spock 25", "Alice wins, by winning 25 game(s) and tying 0 game(s)"),
+                ("Spock Rock 25", "Bob wins, by winning 12 game(s) and tying 7 game(s)"),
+                ("Spock Paper 25", "Bob wins, by winning 13 game(s) and tying 6 game(s)"),
+                ("Spock Scissors 25", "Bob wins, by winning 12 game(s) and tying 7 game(s)"),
+                ("Spock Lizard 25", "Bob wins, by winning 13 game(s) and tying 6 game(s)"),
+                ("Spock Spock 25", "Bob wins, by winning 12 game(s) and tying 7 game(s)"),
+            ]
+        );
+
+        let mut parsed_instructions = Vec::with_capacity(3);
+        let mut game: Game;
+        for instruction in mapping.keys() {
+            parsed_instructions.clear();
+            parse_game_line(&String::from(*instruction), &mut parsed_instructions);
+            game = Game::new(&parsed_instructions, "Alice", "Bob");
+            game.run();
+            assert_eq!(&format!("{}", game), mapping.get(instruction).unwrap());
+        }
+    }
 }
