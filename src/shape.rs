@@ -40,3 +40,16 @@ pub fn parse_shape(shape: &str) -> Option<Shape> {
         _ => None
     }
 }
+
+#[cfg(test)]
+mod tests {
+    #[test]
+    fn shape_comparison() {
+        use super::*;
+
+        assert!(Shape::Rock.beats(&Shape::Scissors));
+        assert!(Shape::Paper.beats(&Shape::Spock));
+        assert!(!Shape::Paper.beats(&Shape::Scissors));
+        assert_eq!(Shape::Spock, Shape::Spock);
+    }
+}

@@ -5,7 +5,6 @@ mod shape;
 mod player;
 mod game;
 mod utils;
-mod tests;
 
 fn main() {
     let game_amount = utils::num_parse(&utils::get_input());
