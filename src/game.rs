@@ -1,4 +1,5 @@
 use std::fmt;
+
 use crate::{Player, shape, Shape};
 
 #[derive(Eq, PartialEq, Debug)]
@@ -11,13 +12,16 @@ pub struct Game {
 
 impl Game {
     pub fn new(instructions: &[String], player1_name: &str, player2_name: &str) -> Self {
+        let player1_shape = shape::parse_shape(instructions[0].as_str()).expect("Could not parse shape");
+        let player2_shape = shape::parse_shape(instructions[1].as_str()).expect("Could not parse shape");
         Self {
-            player1: Player::new(player1_name, shape::parse_shape(instructions[0].as_str()).unwrap()),
-            player2: Player::new(player2_name, shape::parse_shape(instructions[1].as_str()).unwrap()),
+            player1: Player::new(player1_name, player1_shape),
+            player2: Player::new(player2_name, player2_shape),
             turns: crate::utils::num_parse(&instructions[2]),
             ties: 0,
         }
     }
+
     fn in_loop(&mut self, turn_num: u64) -> bool {
         use crate::Shape::*;
         let turns_left = self.turns - turn_num;

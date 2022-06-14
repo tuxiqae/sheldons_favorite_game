@@ -1,8 +1,10 @@
 #[cfg(test)]
 mod tests {
-    use crate::game::Game;
-    use crate::shape::Shape;
+    use std::collections::HashMap;
+
+    use crate::game::{Game, parse_game_line};
     use crate::player::Player;
+    use crate::shape::Shape;
 
     #[test]
     fn shape_comparison() {
@@ -46,10 +48,7 @@ mod tests {
 
     #[test]
     fn run_all_games() {
-        use std::collections::HashMap;
-        use crate::game::parse_game_line;
-
-        let mapping: HashMap<&str, &str> = HashMap::from(
+        let instruction_mapping: HashMap<&str, &str> = HashMap::from(
             [
                 ("Rock Rock 25", "Bob wins, by winning 12 game(s) and tying 7 game(s)"),
                 ("Rock Paper 25", "Bob wins, by winning 13 game(s) and tying 6 game(s)"),
@@ -79,14 +78,17 @@ mod tests {
             ]
         );
 
-        let mut parsed_instructions = Vec::with_capacity(3);
+        let mut parsed_instructions: Vec<String> = Vec::with_capacity(3);
         let mut game: Game;
-        for instruction in mapping.keys() {
+        for instruction in instruction_mapping.keys() {
             parsed_instructions.clear();
             parse_game_line(&String::from(*instruction), &mut parsed_instructions);
             game = Game::new(&parsed_instructions, "Alice", "Bob");
             game.run();
-            assert_eq!(&format!("{}", game), mapping.get(instruction).unwrap());
+            assert_eq!(
+                &format!("{game}"),
+                instruction_mapping.get(instruction).expect("`instruction` not a valid key")
+            );
         }
     }
 }
