@@ -75,6 +75,7 @@ mod tests {
                 ("Spock Scissors 25", "Bob wins, by winning 12 game(s) and tying 7 game(s)"),
                 ("Spock Lizard 25", "Bob wins, by winning 13 game(s) and tying 6 game(s)"),
                 ("Spock Spock 25", "Bob wins, by winning 12 game(s) and tying 7 game(s)"),
+                ("Spock Spock 1", "Alice and Bob tie, each winning 0 game(s) and tying 1 game(s)"),
             ]
         );
 
