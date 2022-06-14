@@ -1,4 +1,5 @@
 use std::fmt;
+
 use crate::Shape;
 
 #[derive(Eq, PartialEq, Debug)]
@@ -11,7 +12,7 @@ pub struct Player {
 impl Player {
     pub fn new(name: &str, shape: Shape) -> Self {
         Self {
-            name: String::from(name),
+            name: name.to_owned(),
             shape,
             score: 0,
         }

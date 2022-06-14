@@ -23,22 +23,20 @@ mod tests {
             ties: 0,
         };
 
-        let correct_game_instructions: Vec<String> = Vec::from(
+        let correct_game_instructions: [String; 3] =
             [
-                String::from("Spock"),
-                String::from("Lizard"),
-                String::from("6")
-            ]
-        );
+                "Spock".to_owned(),
+                "Lizard".to_owned(),
+                "6".to_owned()
+            ];
 
         let game_equal = Game::new(&correct_game_instructions, "player1", "player2");
-        let wrong_game_instructions: Vec<String> = Vec::from(
+        let wrong_game_instructions: [String; 3] =
             [
-                String::from("Lizard"),
-                String::from("Spock"),
-                String::from("6")
-            ]
-        );
+                "Lizard".to_owned(),
+                "Spock".to_owned(),
+                "6".to_owned()
+            ];
 
         let game_not_equal = Game::new(&wrong_game_instructions, "player1", "player2");
 
@@ -83,7 +81,7 @@ mod tests {
         let mut game: Game;
         for instruction in instruction_mapping.keys() {
             parsed_instructions.clear();
-            parse_game_line(&String::from(*instruction), &mut parsed_instructions);
+            parse_game_line(*instruction, &mut parsed_instructions);
             game = Game::new(&parsed_instructions, "Alice", "Bob");
             game.run();
             assert_eq!(
